@@ -83,6 +83,10 @@ export const FocusTrap = defineComponent({
     'postActivate',
     'deactivate',
     'postDeactivate',
+    'pause',
+    'postPause',
+    'unpause',
+    'postUnpause',
   ],
 
   render() {
@@ -122,6 +126,10 @@ export const FocusTrap = defineComponent({
         },
         onPostActivate: () => emit('postActivate'),
         onPostDeactivate: () => emit('postDeactivate'),
+        onPause: () => emit('pause'),
+        onPostPause: () => emit('postPause'),
+        onUnpause: () => emit('unpause'),
+        onPostUnpause: () => emit('postUnpause'),
         initialFocus: props.initialFocus,
         fallbackFocus: props.fallbackFocus,
         tabbableOptions: props.tabbableOptions,

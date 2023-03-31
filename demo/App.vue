@@ -272,6 +272,73 @@
         </SampleComponent>
       </focus-trap>
     </section>
+
+    <!--
+      Based on https://github.com/focus-trap/focus-trap/blob/da97007787235571a394544ed85ec31445f2069e/docs/index.html#L292
+    -->
+    <section id="nested">
+      <h2 id="nested-heading">nested</h2>
+      <p>
+        Nested focus traps.
+        <blockquote>
+          So I have nested Traps, both with the prop <code>clickOutsideDeactivates</code>. However when I click outside both traps while the inner one is active only the inner one closes.
+          Is there a pattern I can use to close both traps if the click is outside of both, or just the inner trap if the click is outside the inner trap but within the outer one?
+          https://github.com/focus-trap/focus-trap-react/discussions/942
+        </blockquote>
+      </p>
+      <p>
+        <button id="nested-activate-outer" aria-describedby="nested-heading" @click="demos.nested.outer.isActive = true">
+          activate outer trap
+        </button>
+        <button id="nested-activate-outer" aria-describedby="nested-heading" @click="demos.nested.clickOutsideDeactivatesBoth = true">
+          Click outside deactivates both: {{ demos.nested.clickOutsideDeactivatesBoth }}
+        </button>
+      </p>
+      <focus-trap
+        v-model:active="demos.nested.outer.isActive"
+        :click-outside-deactivates="demos.nested.outer.onClickOutsideDeactivates"
+        @pause="demos.nested.outer.onPauseCalledTimes++"
+        @post-pause="demos.nested.outer.onPostPauseCalledTimes++"
+        @unpause="demos.nested.outer.onUnpauseCalledTimes++"
+        @post-unpause="demos.nested.outer.onPostUnpauseCalledTimes++"
+      >
+        <div id="nested-outer" class="trap" :class="demos.nested.outer.isActive && 'is-active'" tabindex="-1">
+          <p>
+            <button id="nested-deactivate-outer" aria-describedby="nested-heading" @click="demos.nested.outer.isActive = false">
+              deactivate outer trap
+            </button>
+          </p>
+          <p>
+            <button id="nested-activate-inner" aria-describedby="nested-heading" @click="demos.nested.inner.isActive = true">
+              activate inner trap
+            </button>
+          </p>
+          <p>
+            <button >
+              NOTHING
+            </button>
+          </p>
+          <focus-trap
+            v-model:active="demos.nested.inner.isActive"
+            :click-outside-deactivates="demos.nested.inner.onClickOutsideDeactivates"
+          >
+            <div id="nested-inner" class="trap" :class="demos.nested.inner.isActive && 'is-active'" style="padding:5px 10px;">
+              <p>
+                <button>
+                  nothing
+                </button>
+              </p>
+              <p>
+                <button id="nested-deactivate-inner" aria-describedby="nested-heading" @click="demos.nested.inner.isActive = false">
+                  deactivate and close inner trap
+                </button>
+              </p>
+            </div>
+          </focus-trap>
+        </div>
+      </focus-trap>
+      <pre>{{ demos.nested }}</pre>
+    </section>
   </div>
 </template>
 
@@ -307,17 +374,30 @@ const demos = reactive({
   comp: {
     isActive: false,
   },
-})
-
-function handleClickFromAOC() {
-  if (demos.aoc.isActive) {
-    alert('Successfully clicked outside of FocusTrap')
-  } else {
-    alert(
-      'Active the FocusTrap first to see that you can allow clicks to escape conditionally'
-    )
+  nested: {
+    clickOutsideDeactivatesBoth: false,
+    outer: {
+      onClickOutsideDeactivates: () => true,
+      isActive: false,
+      onPauseCalledTimes: 0,
+      onPostPauseCalledTimes: 0,
+      onUnpauseCalledTimes: 0,
+      onPostUnpauseCalledTimes: 0
+    },
+    inner: {
+      onClickOutsideDeactivates: (e) => {
+        // console.log(e.target)
+        // console.log(e.target.closest('#nested-outer'))
+        // if(!e.target.closest('#nested-outer') && demos.nested.clickOutsideDeactivatesBoth) {
+        //   console.log('yoo')
+        //   demos.nested.outer.isActive = false
+        // }
+        return true
+      },
+      isActive: false
+    },
   }
-}
+})
 </script>
 
 <style>
@@ -348,6 +428,10 @@ body {
   background: #fee9ff;
 }
 
+.trap.is-active .trap.is-active {
+  background: rgba(0,0,0,0.1)
+}
+
 .inline-label {
   margin-right: 0.5em;
 }
@@ -375,5 +459,12 @@ kbd {
   background: #eee;
   font-size: 90%;
   padding: 0 2px;
+}
+
+blockquote {
+  border-left: 2px solid;
+  padding-left: 10px;
+  margin-left: 0px;
+  font-style: italic;
 }
 </style>
